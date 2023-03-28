@@ -55,7 +55,6 @@ const GetPostComments = async (req, res) => {
       .populate({ path: "commenter", select: "-password" })
       .populate({ path: "children", populate: { path: "children" } })
       .lean();
-      console.log(comments)
 
     return res.status(200).json({ data: comments });
   } catch (error) {

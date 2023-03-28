@@ -3,11 +3,11 @@ import { IoStatsChart } from "react-icons/io5";
 import { Post } from "./Post";
 
 export default function TopPosts(params) {
-  const [posts, setposts] = useState([]);
+  const [posts, setPosts] = useState([]);
   useEffect(() => {
     fetch("http://localhost:5000/api/posts/GetTopPosts")
       .then((res) => res.json())
-      .then((data) => setposts(data.data));
+      .then((data) => setPosts(data.data));
   }, []);
   return (
     <>
@@ -22,6 +22,7 @@ export default function TopPosts(params) {
           post={post}
           key={i}
           top={true}
+          setPosts={setPosts}
           Style={
             " d-flex flex-column  col-2  px-2 py-0 justify-content-start align-items-center justify-content-evenly"
           }

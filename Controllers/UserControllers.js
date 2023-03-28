@@ -1,8 +1,7 @@
 const User = require("../Models/UserModel");
 const follow = require("../Models/FollowModel");
 const Post = require("../Models/PostModel");
-
-const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const Follow = async (req, res) => {
   try {
@@ -12,7 +11,6 @@ const Follow = async (req, res) => {
       userId: UserID,
       followingId: FollowingID,
     });
-    console.log(UserID, FollowingID, ExistedFollowing.length);
 
     if (ExistedFollowing.length) {
       throw new Error("already following this guy");
@@ -34,7 +32,6 @@ const Unfollow = async (req, res) => {
       userId: UserID,
       followingId: FollowingID,
     });
-    console.log(UserID, FollowingID, ExistedFollowing.length);
 
     if (!ExistedFollowing.length) {
       throw new Error("you are not following him");
@@ -70,8 +67,8 @@ const GetFollowing = async (req, res) => {
 };
 const GetUser = async (req, res) => {
   try {
-    const UserName = req.params.UserName;
-    const user = await User.find({ username: UserName }).select("-password");
+    const cookie = jwt.decode(req.cookies.token);
+    const user = await User.findOne({ _id: cookie.id }).select("-password");
 
     if (!user) {
       throw new Error("user doesnt exist ");
@@ -84,16 +81,7 @@ const GetUser = async (req, res) => {
       likeCount = post.likeCount;
     });
 
-    return res.status(200).json({
-      data: {
-        user,
-        post: {
-          likeCount: likeCount,
-          postCount: userPosts.length,
-          data: userPosts,
-        },
-      },
-    });
+    return res.status(200).json(user);
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }

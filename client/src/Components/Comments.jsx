@@ -10,7 +10,6 @@ function Comments() {
       .then((res) => res.json())
       .then((data) => {
         setComments(data.data);
-        console.log(data.data)
       });
   }, [postId]);
 

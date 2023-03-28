@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser')
+
 require('./config/connectDB')
 
 const corsOptions = {
@@ -12,6 +14,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({extended: true,}));
 app.use(express.json());
+app.use(cookieParser())
+
 
 
 const users = require("./Routes/UserRoutes");

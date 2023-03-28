@@ -4,13 +4,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "./Loading";
 import PostCard from "./PostCard";
 
-export default function PostBrowser(params) {
+export default function PostBrowser() {
   const navigate = useNavigate();
-  let [searchParams, setSearchParams] = useSearchParams("");
-
+  let [searchParams, setSearchParams] = useSearchParams("")
   const [sort, setSort] = useState("latest");
   const Sorts = ["latest", "comments", "likes", "earliest"];
-  const [posts, setposts] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,17 +23,16 @@ export default function PostBrowser(params) {
     )
       .then((res) => res.json())
       .then((data) => {
-        setposts(data.data);
+        setPosts(data.data);
         setLoading(false);
-        console.log(data.data);
       });
-  }, [searchParams, sort]);
+  }, [searchParams, sort, setPosts]);
   const handleSort = (e) => {
     setSort(e.target.value);
     searchParams.set("sortBy", e.target.value);
     setSearchParams(searchParams);
   };
-
+console.log(posts,'post Browser')
   return (
     <Stack>
       <Card className=" mb-3 d-flex  flex-row justify-content-between p-2">
@@ -61,7 +59,7 @@ export default function PostBrowser(params) {
           </div>
         </div>
       </Card>
-      {loading ? <Loading /> : <PostCard posts={posts} />}
+      {loading ? <Loading /> : <PostCard posts={posts} setPosts={setPosts} />}
     </Stack>
   );
 }

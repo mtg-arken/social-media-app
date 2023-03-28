@@ -1,35 +1,68 @@
-import { Card} from "react-bootstrap";
+import { useRef } from "react";
 
 import { RxAvatar } from "react-icons/rx";
+import { Link } from "react-router-dom";
 
 export default function PostEditor(params) {
+  const titleRef = useRef();
+  const contentRef = useRef();
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    console.log(titleRef.current.value, contentRef.current.value);
+    fetch(`http://localhost:5000/api/posts/CreatePost`, {
+      method: "post",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title: titleRef.current.value , content: contentRef.current.value }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        data.error && alert(data.error);
+        console.log(data.data);
+      });
+  }
   return (
     <>
-      <a href=".."> Go back to posts </a>
-      <Card>
-        <Card.Body className=" d-flex  align-items-center">
+      <Link to="/"> Go back to posts </Link>
+      <div className=" card">
+        <div className="  card-Body d-flex  align-items-center">
           <RxAvatar />
-          <Card.Text className=" m-0 mr-3 ">
+          <div className="  card-text  m-0 mr-3 ">
             {" "}
             What would you like to post today ?
-          </Card.Text>
-        </Card.Body>
-        <Card.Body>
-          <form className=" d-flex flex-column justify-content-center ">
-            <div class="form-floating mb-3 mt-3">
-              <input type="text" class="form-control" id="Title" required />
-              <label for="Title">Title</label>
+          </div>
+        </div>
+        <div className="  card-Body">
+          <form
+            className=" d-flex flex-column justify-content-center "
+            onSubmit={handleSubmit}
+          >
+            <div className="form-floating mb-3 mt-3">
+              <input
+                type="text"
+                className="form-control"
+                ref={titleRef}
+                required
+              />
+              <label>Title</label>
             </div>
-            <div class="form-floating mt-3 mb-3">
-            <textarea   id="floatingTextarea2"  className=" form-control h-100" rows="5"/>
-              <label for="content">content</label>
+            <div className="form-floating mt-3 mb-3">
+              <textarea
+                className=" form-control h-100"
+                rows="5"
+                ref={contentRef}
+              />
+              <label>content</label>
             </div>
-            <button type="submit" class="btn btn-outline-info">
+            <button type="submit" className="btn btn-outline-info">
               Submit
             </button>
           </form>
-        </Card.Body>
-      </Card>
+        </div>
+      </div>
     </>
   );
 }

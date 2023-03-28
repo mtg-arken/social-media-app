@@ -2,8 +2,10 @@ const mongoose = require("mongoose");
 const Post = require("../Models/PostModel");
 const Comment = require("../Models/CommentModel");
 const PostLike = require("../Models/PostLikeModel");
+const jwt = require("jsonwebtoken");
 
-const cooldown = new Set();
+const cooldownPost = new Set();
+const cooldownLike = new Set();
 
 //get posts of specific user
 const GetPosts = async (req, res) => {
@@ -49,20 +51,23 @@ const GetPosts = async (req, res) => {
 };
 const CreatePost = async (req, res) => {
   try {
-    const { title, content, userID } = req.body;
-    if (!title && !content && !userID) {
+    const { title, content } = req.body;
+    const userId = jwt.decode(req.cookies.RefreshToken);
+
+    if (!title && !content && !userId.id) {
       throw new Error("missing fields");
     }
-    TestValidIP(userID);
-    if (cooldown.has(userID)) {
-      throw new Error("your doing too much requests");
+    TestValidIP(userId.id);
+    if (cooldownPost.has(userId.id)) {
+      throw new Error("your doing too much requests , wait 1 min");
     }
-    cooldown.add(userID);
+    cooldownPost.add(userId.id);
     setTimeout(() => {
-      cooldown.delete(userID);
+      cooldownPost.delete(userId.id);
     }, 60000);
+
     const newPost = await Post.create({
-      Owner: userID,
+      Owner: userId.id,
       title: title,
       content: content,
     });
@@ -74,45 +79,75 @@ const CreatePost = async (req, res) => {
 };
 const UpdatePost = async (req, res) => {
   try {
-    const postID = req.params.PostID;
-    const { content, isAdmin, userID } = req.body;
+    let postId = req.params.PostId;
+    const { content, id } = req.body;
+
+    if (postId === "undefined") postId = id;
+
     if (!content) {
       throw new Error("missing fields");
     }
-    TestValidIP(postID);
-    TestValidIP(userID);
-    const post = await Post.findById(postID);
+    const userId = jwt.decode(req.cookies.RefreshToken);
+
+    const post = await Post.findById(postId)
+      .populate("Owner", "-password")
+      .lean();
+
     if (!post) {
       throw new Error("post not found");
     }
-    if (post.Owner != userID && !isAdmin) {
+
+    if (post.Owner._id.toString() != userId.id) {
       throw new Error("you dont have tha authority to update this post");
     }
-    post.content = content;
-    post.edited = true;
-    post.save;
-    return res.status(200).json({ data: post });
+    if (cooldownPost.has(userId.id)) {
+      throw new Error("your doing too much requests , wait 1 min");
+    }
+    cooldownPost.add(userId.id);
+    setTimeout(() => {
+      cooldownPost.delete(userId.id);
+    }, 60000);
+
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      { content: content },
+      { new: true }
+    )
+      .populate("Owner", "-password")
+      .lean();
+
+    return res.status(200).json({ data: updatedPost });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
 };
 const DeletePost = async (req, res) => {
   try {
-    const postID = req.params.PostID;
-    const { isAdmin, userID } = req.body;
+    let postID = req.params.PostID;
+    const { id } = req.body;
+
+    const userId = jwt.decode(req.cookies.RefreshToken);
+
+    if (postID === "undefined") postID = id;
+
     TestValidIP(postID);
-    TestValidIP(userID);
+    TestValidIP(userId.id);
+
     const post = await Post.findById(postID);
+
     if (!post) {
       throw new Error("post not found");
     }
-    if (post.Owner != userID && !isAdmin) {
+
+    if (post.Owner._id.toString() != userId.id) {
       throw new Error("you dont have tha authority to update this post");
     }
+
     post.remove();
     if (post.commentsCount > 0) {
       await Comment.deleteMany({ post: postID });
     }
+
     return res.status(200).json({ data: post });
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -120,44 +155,51 @@ const DeletePost = async (req, res) => {
 };
 const LikePost = async (req, res) => {
   try {
-    const postID = req.params.PostID;
-    const { userID } = req.body;
+    const { id } = req.body;
+
+    let postID = req.params.PostID;
+    const userId = jwt.decode(req.cookies.RefreshToken);
+    if (postID === "undefined") postID = id;
     TestValidIP(postID);
-    TestValidIP(userID);
-    const post = await Post.findById(postID);
+    TestValidIP(userId.id);
+    let post = await Post.findById(postID);
     if (!post) {
       throw new Error("post not found");
     }
-    const existLike = await PostLike.find({ post: postID, user: userID });
+    if (cooldownLike.has(userId.id)) {
+      throw new Error("your doing too much requests, wait 10 secs");
+    }
+    cooldownLike.add(userId.id);
+    setTimeout(() => {
+      cooldownLike.delete(userId.id);
+    }, 10000);
+    const existLike = await PostLike.find({ post: postID, user: userId.id });
+    let updatedPost;
     if (existLike.length > 0) {
-      throw new Error("already liked this post ");
+      await PostLike.findOneAndDelete({ post: postID, user: userId.id });
+      updatedPost = await Post.findByIdAndUpdate(
+        postID,
+        { $inc: { likeCount: -1 } },
+        { new: true }
+      )
+        .populate("Owner", "-password")
+        .lean();
+    } else {
+      await PostLike.create({ post: postID, user: userId.id });
+      updatedPost = await Post.findByIdAndUpdate(
+        postID,
+        { $inc: { likeCount: 1 } },
+        { new: true }
+      )
+        .populate("Owner", "-password")
+        .lean();
     }
-    PostLike.create({ post: postID, user: userID });
-    post.likeCount++;
-    post.save();
-    return res.status(200).json({ data: post });
+    return res.status(200).json({ data: updatedPost });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
 };
-const UnlikePost = async (req, res) => {
-  try {
-    const postID = req.params.PostID;
-    const { userID } = req.body;
-    TestValidIP(postID);
-    TestValidIP(userID);
-    const post = await Post.findById(postID);
-    if (!post) {
-      throw new Error("post not found");
-    }
-    await PostLike.findOneAndDelete({ postID, userID });
-    post.likeCount--;
-    post.save();
-    return res.status(200).json({ data: post });
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-};
+
 const GetUsersLikedPost = async (req, res) => {
   try {
     const userID = req.params.userID;
@@ -173,8 +215,6 @@ const GetUsersLikedPost = async (req, res) => {
 };
 const GetPost = async (req, res) => {
   try {
-    const { userID } = req.body;
-
     const PostID = req.params.PostID;
     if (!PostID) {
       throw new Error("missing fields ");
@@ -215,7 +255,6 @@ module.exports = {
   UpdatePost,
   DeletePost,
   LikePost,
-  UnlikePost,
   GetUsersLikedPost,
   GetPost,
   GetTopPosts,

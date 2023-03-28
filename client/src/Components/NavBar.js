@@ -1,14 +1,32 @@
 import Form from "react-bootstrap/Form";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { AiOutlineSearch, AiFillHome, AiFillHighlight } from "react-icons/ai";
+import Cookies from "js-cookie";
+import { BsFillChatDotsFill } from "react-icons/bs";
+
 import Button from "react-bootstrap/Button";
+import { UserContext } from "../App";
 
 function NavBar(props) {
+  const { user, setUser } = useContext(UserContext);
+
   const [width, setWindowWidth] = useState(0);
   const [searchIcon, setSearchIcon] = useState(false);
 
+  useEffect(() => {
+    if (Object.keys(user).length === 0) {
+      fetch(`http://localhost:5000/api/users/GetUser`, {
+        method: "get",
+        credentials: "include",
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setUser(data);
+        });
+    }
+  }, [setUser]);
   useEffect(() => {
     updateDimensions();
     window.addEventListener("resize", updateDimensions);
@@ -24,11 +42,19 @@ function NavBar(props) {
   const handleSearchIcon = (e) => {
     setSearchIcon(!searchIcon);
   };
+  const handleLogOut = () => {
+    fetch("http://localhost:5000/api/auth/logout", {
+      method: "GET",
+      credentials: "include",
+    }).then((data) => {
+      data.text();
+      setUser({});
+    });
+  };
 
   return (
-    <div  className=" d-flex flex-column">
-     
-     <Navbar bg="light" expand="lg" className=" mb-4">
+    <div className=" d-flex flex-column">
+      <Navbar bg="light" expand="lg" className=" mb-4">
         <div
           style={
             !mobile
@@ -83,8 +109,34 @@ function NavBar(props) {
             <Nav.Link href="/">
               <AiFillHome />
             </Nav.Link>
-            <Nav.Link href="/SingUp">SingUp</Nav.Link>
-            <Nav.Link href="/LogIn">LogIn</Nav.Link>
+            {Cookies.get("token") ? (
+              <>
+                <Nav.Link href="/SingUp">
+                  <BsFillChatDotsFill />
+                </Nav.Link>
+                <img
+                  src={user.image}
+                  alt="Logo"
+                  style={{
+                    clipPath: "circle(40%) ",
+                    width: "40px",
+                    height: "40px",
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={handleLogOut}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Nav.Link href="/SingUp">SingUp</Nav.Link>
+                <Nav.Link href="/LogIn">login</Nav.Link>
+              </>
+            )}
           </div>
         </div>
       </Navbar>

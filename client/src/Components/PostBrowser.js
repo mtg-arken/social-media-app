@@ -32,7 +32,6 @@ export default function PostBrowser() {
     searchParams.set("sortBy", e.target.value);
     setSearchParams(searchParams);
   };
-console.log(posts,'post Browser')
   return (
     <Stack>
       <Card className=" mb-3 d-flex  flex-row justify-content-between p-2">

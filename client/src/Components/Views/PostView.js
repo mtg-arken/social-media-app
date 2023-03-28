@@ -9,6 +9,8 @@ import PostCard from "../PostCard";
 function PostView() {
   const [post, setPost] = useState([{}]);
   const [loading, setLoading] = useState(true);
+  const [comments, setComments] = useState();
+
   const { postId } = useParams();
   useEffect(() => {
     fetch(`http://localhost:5000/api/posts/GetPost/${postId}`)
@@ -18,6 +20,14 @@ function PostView() {
         setLoading(false);
       });
   }, [postId]);
+
+  useEffect(() => {
+      fetch(`http://localhost:5000/api/comments/GetPostComments/${postId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setComments(data.data);
+        });
+    }, [postId,post]);
 
   return (
     <>
@@ -34,8 +44,8 @@ function PostView() {
             ) : (
               <div>
                 <PostCard posts={post} setPosts={setPost} />
-                <AddComments />
-                <Comments />
+                <AddComments setPost={setPost} />
+                <Comments comments={comments} setComments={setComments}  />
               </div>
             )}
           </div>

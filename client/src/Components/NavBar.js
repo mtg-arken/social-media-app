@@ -14,7 +14,6 @@ function NavBar(props) {
 
   const [width, setWindowWidth] = useState(0);
   const [searchIcon, setSearchIcon] = useState(false);
-
   useEffect(() => {
     if (Object.keys(user).length === 0) {
       fetch(`http://localhost:5000/api/users/GetUser`, {
@@ -23,7 +22,11 @@ function NavBar(props) {
       })
         .then((res) => res.json())
         .then((data) => {
-          setUser(data);
+          if (data.error) {
+            alert(data.error);
+          } else {
+            setUser(data);
+          }
         });
     }
   }, [setUser]);
@@ -51,6 +54,7 @@ function NavBar(props) {
       setUser({});
     });
   };
+  console.log(Object.keys(user).length === 0);
 
   return (
     <div className=" d-flex flex-column">
@@ -109,7 +113,7 @@ function NavBar(props) {
             <Nav.Link href="/">
               <AiFillHome />
             </Nav.Link>
-            {Cookies.get("token") ? (
+            {Object.keys(user).length !== 0 ? (
               <>
                 <Nav.Link href="/SingUp">
                   <BsFillChatDotsFill />

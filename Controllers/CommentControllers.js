@@ -1,44 +1,46 @@
 const mongoose = require("mongoose");
 const Comment = require("../Models/CommentModel");
 const Post = require("../Models/PostModel");
+const jwt = require("jsonwebtoken");
 
 const cooldown = new Set();
 
 const CreateComment = async (req, res) => {
   try {
-    const postID = req.params.postID;
-    const { content, parentID, userID } = req.body;
-    TestValidID(postID);
+    const postId = req.params.postID;
+    const { content, parentId } = req.body;
+    TestValidID(postId);
+    const userId = jwt.decode(req.cookies.RefreshToken);
 
-    TestValidID(userID);
-    const post = await Post.findById(postID);
+    TestValidID(userId.id);
+    const post = await Post.findById(postId).populate("Owner", "-password");
     if (!post) {
       throw new Error("post not found");
     }
-    if (cooldown.has(userID)) {
+    if (cooldown.has(userId.id)) {
       throw new Error("too much requests !! Please try again shortly.");
     }
-    cooldown.add(userID);
+    cooldown.add(userId.id);
     setTimeout(() => {
-      cooldown.delete(userID);
+      cooldown.delete(userId.id);
     }, 30000);
 
     const comment = await Comment.create({
       Content: content,
-      ParentID: parentID,
-      commenter: userID,
-      postID: postID,
+      ParentID: parentId,
+      commenter: userId.id,
+      postID: postId,
     });
-    if (parentID) {
-      TestValidID(parentID);
-      const parentComment = await Comment.findById(parentID);
+    if (parentId) {
+      TestValidID(parentId);
+      const parentComment = await Comment.findById(parentId);
       parentComment.children.push(comment);
       parentComment.save();
     }
     post.commentsCount++;
     await post.save();
     await Comment.populate(comment, { path: "commenter", select: "-password" });
-    return res.status(200).json({ data: comment });
+    return res.status(200).json({ data: post });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -52,9 +54,19 @@ const GetPostComments = async (req, res) => {
       postID: postID,
       ParentID: { $eq: null },
     })
-      .populate({ path: "commenter", select: "-password" })
-      .populate({ path: "children", populate: { path: "children" } })
+      .populate({
+        path: "commenter",
+        select: "-password",
+      })
+      .populate({
+        path: "children",
+        populate: {
+          path: "commenter",
+          select: "-password",
+        },
+      })
       .lean();
+    console.log(comments);
 
     return res.status(200).json({ data: comments });
   } catch (error) {
@@ -63,21 +75,30 @@ const GetPostComments = async (req, res) => {
 };
 const UpdateComment = async (req, res) => {
   try {
-    const commentID = req.params.commentID;
-    const { userID, isAdmin, content } = req.body;
+    let commentID = req.params.commentID;
+    const { content } = req.body;
     TestValidID(commentID);
-    const comment = await Comment.findById(commentID);
-    TestValidID(userID);
-    if (!isAdmin && comment.commenter != userID) {
+    let comment = await Comment.findById(commentID);
+
+    const userId = jwt.decode(req.cookies.RefreshToken);
+
+    TestValidID(userId.id);
+    if (comment.commenter._id != userId.id) {
       throw new Error("you are not allowed to modify it");
     }
     if (!content) {
       throw new Error("cant put empty content");
     }
+    comment = await Comment.findByIdAndUpdate(
+      commentID,
+      { Content: content, edited: true },
+      { new: true }
+    )
+      .populate({ path: "commenter", select: "-password" })
+      .populate({ path: "children", populate: { path: "children" } })
+      .lean();
+    console.log(comment);
 
-    comment.Content = content;
-    comment.edited = true;
-    await comment.save();
     return res.status(200).json({ data: comment });
   } catch (error) {
     return res.status(400).json({ error: error.message });

@@ -9,7 +9,6 @@ export default function PostEditor(params) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    console.log(titleRef.current.value, contentRef.current.value);
     fetch(`http://localhost:5000/api/posts/CreatePost`, {
       method: "post",
       credentials: "include",
@@ -21,7 +20,6 @@ export default function PostEditor(params) {
       .then((res) => res.json())
       .then((data) => {
         data.error && alert(data.error);
-        console.log(data.data);
       });
   }
   return (

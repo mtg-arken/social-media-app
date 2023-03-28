@@ -67,8 +67,8 @@ const GetFollowing = async (req, res) => {
 };
 const GetUser = async (req, res) => {
   try {
-    const cookie = jwt.decode(req.cookies.token);
-    const user = await User.findOne({ _id: cookie.id }).select("-password");
+    const userId = jwt.decode(req.cookies.RefreshToken);
+    const user = await User.findOne({ _id: userId.id }).select("-password");
 
     if (!user) {
       throw new Error("user doesnt exist ");

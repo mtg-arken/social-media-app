@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import { IoStatsChart } from "react-icons/io5";
+import { GetTopPosts } from "../Services/api";
 import { Post } from "./Post";
 
 export default function TopPosts(params) {
   const [posts, setPosts] = useState([]);
   useEffect(() => {
-    fetch("http://localhost:5000/api/posts/GetTopPosts")
-      .then((res) => res.json())
-      .then((data) => setPosts(data.data));
+    let fetchTopPosts=async()=>{
+      let response = await GetTopPosts()
+      if(response.error) alert (response.error)
+      else {
+        setPosts(response.data)
+      }
+    }
+    fetchTopPosts()
   }, []);
   return (
     <>

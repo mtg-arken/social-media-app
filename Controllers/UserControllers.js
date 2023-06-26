@@ -2,6 +2,7 @@ const User = require("../Models/UserModel");
 const follow = require("../Models/FollowModel");
 const Post = require("../Models/PostModel");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 
 const Follow = async (req, res) => {
   try {
@@ -73,15 +74,31 @@ const GetUser = async (req, res) => {
     if (!user) {
       throw new Error("user doesnt exist ");
     }
+    return res.status(200).json(user);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+};
+const GetProfile = async (req, res) => {
+  try {
+    const userId = req.params.ID;
 
-    const userPosts = await Post.find({ owner: user.id }).sort("-createdAt");
+    let user = await User.findById(userId).select("-password");
+
+    if (!user) {
+      throw new Error("user doesnt exist ");
+    }
+
+    const userPosts = await Post.find({ Owner:  mongoose.Types.ObjectId(user._id)}).sort("-createdAt");
 
     let likeCount = 0;
-    userPosts.map((post) => {
-      likeCount = post.likeCount;
+    userPosts.map( (post) => {
+       likeCount += post.likeCount;
     });
 
-    return res.status(200).json(user);
+
+
+    return res.status(200).json({user:user,likeCount:likeCount,postsCount:userPosts.length});
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
@@ -125,4 +142,5 @@ module.exports = {
   GetUser,
   GetRandomUsers,
   UpdateUser,
+  GetProfile,
 };

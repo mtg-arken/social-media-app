@@ -1,29 +1,20 @@
 import React, { useRef } from "react";
 import { useParams } from "react-router-dom";
+import { createComment } from "../Services/api";
 
 export default function AddComments(props) {
   const inputRef = useRef();
   const { postId } = useParams();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    fetch(`http://localhost:5000/api/comments/CreateComment/${postId}`, {
-      method: "post",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-
-      body: JSON.stringify({ content: inputRef.current.value }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) alert(data.error);
-        else {
-          e.target.reset()
-          props.setPost([data.data]);
-        }
-      });
+    let data = await createComment(postId, inputRef.current.value);
+    if (data.error) {
+      alert(data.error);
+    } else {
+      e.target.reset();
+      props.setPost([data.data]);
+    }
   };
   return (
     <div className="card ">
@@ -37,7 +28,6 @@ export default function AddComments(props) {
             className="form-control"
             ref={inputRef}
             placeholder="Leave a comment here"
-            id="floatingTextarea2"
             style={{ height: "100px" }}
           ></textarea>
           <label>Comments</label>

@@ -2,25 +2,19 @@ import { useRef } from "react";
 
 import { RxAvatar } from "react-icons/rx";
 import { Link } from "react-router-dom";
+import { createPost } from "../Services/api";
 
 export default function PostEditor(params) {
   const titleRef = useRef();
   const contentRef = useRef();
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    fetch(`http://localhost:5000/api/posts/CreatePost`, {
-      method: "post",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title: titleRef.current.value , content: contentRef.current.value }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        data.error && alert(data.error);
-      });
+    let response = await createPost(
+      titleRef.current.value,
+      contentRef.current.value
+    );
+    response.error && alert(response.error);
   }
   return (
     <>

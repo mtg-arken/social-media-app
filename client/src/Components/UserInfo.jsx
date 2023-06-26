@@ -1,26 +1,27 @@
 import React from "react";
 import Moment from "react-moment";
-import {  useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function UserInfo(props) {
-  const navigate = useNavigate();
-  const { top } = props;
-  const handleClick = () => {
-    navigate(`/users/Profile?id=${props.id}`);
-  };
   return (
     <>
-      {top ? (
-        <div className="d-flex" onClick={handleClick}>
+      {props.top ? (
+        <Link
+          className="d-flex align-items-center text-decoration-none "
+          to={`/Profile/${props.id}`}
+        >
           <img
             src={props.image}
             alt="Logo"
             style={{ clipPath: "circle(40%) ", width: "40px", height: "40px" }}
           />
-          <p className=" text-secondary px-2">{props.username}</p>
-        </div>
+          <p className=" text-secondary px-2 mb-0">{props.username}</p>
+        </Link>
       ) : (
-        <div className="d-flex  " onClick={handleClick}>
+        <Link
+          className="d-flex  text-decoration-none "
+          to={`/Profile/${props.id}`}
+        >
           <img
             src={props.image}
             alt="Logo"
@@ -35,7 +36,7 @@ function UserInfo(props) {
               {props.edited && <p className=" text-secondary px-2">(edited)</p>}
             </>
           </div>
-        </div>
+        </Link>
       )}
     </>
   );

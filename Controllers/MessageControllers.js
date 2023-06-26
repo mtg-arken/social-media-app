@@ -41,13 +41,12 @@ const SendMessage = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
-const GetMessages = async (req, res) => {
+const GetMessages = async (conversationID) => {
   try {
-    const conversationID = req.params.conversationID;
     TestValidID(conversationID);
     const conversation = await Conversation.findById(conversationID);
     if (!conversation) {
-      throw new Error("no conversation found ");
+      return { error: "no conversation found" }
     }
     const messages = await Message.find({
       conversation: conversationID,
@@ -55,23 +54,21 @@ const GetMessages = async (req, res) => {
       .populate("sender", "-password")
       .sort("-createdAt")
       .limit(12);
-    return res.json(messages);
+    return messages
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    return { error: error.message }
   }
 };
-const GetConversations = async (req, res) => {
+const GetConversations = async (userID) => {
   try {
-    const { userID } = req.body;
     const conversations = await Conversation.find({ $in: [userID] })
       .populate({ path: "recipients", select: "-password" })
       .sort("lastMessageAt")
       .limit(12)
       .lean();
-
-    return res.status(200).json({ data: conversations });
+    return ({ data: conversations });
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    return ({ error: error.message });
   }
 };
 const TestValidID = (ID) => {

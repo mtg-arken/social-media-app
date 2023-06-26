@@ -1,33 +1,24 @@
 import { useContext, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../App";
-
+import { Link, useNavigate } from "react-router-dom";
+import { UserContext } from "../Context/UserProvider";
+import { login } from "../Services/api";
 export default function LogInView(params) {
   const emailRef = useRef("");
   const passwordRef = useRef("");
   const navigate = useNavigate();
-  const {  setUser } = useContext(UserContext);
+  const { setUser } = useContext(UserContext);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    fetch("http://localhost:5000/api/auth/Login", {
-      method: "POST", // *GET, POST, PUT, DELETE, etc.
-      credentials: "include", // include, *same-origin, omit
-      headers: {
-        "Content-Type": "application/json",
-      },
-
-      body: JSON.stringify({
-        Email: emailRef.current.value,
-        Password: passwordRef.current.value,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        data.error ? alert(data.error) :
-        setUser(data.user);
-        navigate("/");
-      });
+    let response = await login(
+      emailRef.current.value,
+      passwordRef.current.value
+    );
+    if (response.error) alert(response.error);
+    else {
+      setUser(response.user);
+      navigate("/");
+    }
   };
 
   return (
@@ -36,7 +27,7 @@ export default function LogInView(params) {
       <h4 className=" my-3">Login</h4>
       <h6>
         Don't have an account yet?
-        <a href="SingUp"> Sign Up</a>
+        <Link to="/SingUp"> Sign Up</Link>
       </h6>
       <form
         className=" d-flex flex-column justify-content-center w-25"
@@ -68,7 +59,7 @@ export default function LogInView(params) {
       </form>
 
       <p className=" mt-5">
-        Copyright © 2022 <a href="/">pinkit</a>
+        Copyright © 2022 <Link to="/">pinkit</Link>
       </p>
     </div>
   );

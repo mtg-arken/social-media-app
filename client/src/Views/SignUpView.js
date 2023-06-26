@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 
 export default function SignUpView(params) {
   return (
@@ -5,43 +6,43 @@ export default function SignUpView(params) {
       <h1 className=" mb-5">Pinkit</h1>
       <h4 className=" my-3">Sign Up</h4>
       <h6>
-        Already have an account? <a href="LogIn"  >Login</a>
+        Already have an account? <Link to="/LogIn"  >Login</Link>
       </h6>
       <form className=" d-flex flex-column justify-content-center w-25">
-        <div class="form-floating mt-3 mb-3">
+        <div className="form-floating mt-3 mb-3">
           <input
             type="text"
-            class="form-control"
+            className="form-control"
             id="UserName"
             required
           />
-          <label for="UserName">UserName</label>
+          <label>UserName</label>
         </div>
-        <div class="form-floating mb-3 mt-3">
+        <div className="form-floating mb-3 mt-3">
           <input
             type="text"
-            class="form-control"
+            className="form-control"
             id="email"
             required
           />
-          <label for="email">Email</label>
+          <label>Email</label>
         </div>
-        <div class="form-floating mt-3 mb-3">
+        <div className="form-floating mt-3 mb-3">
           <input
             type="text"
-            class="form-control"
+            className="form-control"
             id="pwd"
             required
           />
-          <label for="pwd">Password</label>
+          <label>Password</label>
         </div>
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" className="btn btn-primary">
           Submit
         </button>
       </form>
       
         <p className=" mt-5">
-          Copyright © 2022 <a href="/">pinkit</a>
+          Copyright © 2022 <Link to="/">pinkit</Link>
         </p>
       
     </div>

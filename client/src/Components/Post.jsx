@@ -6,11 +6,12 @@ import {
   AiOutlineEdit,
 } from "react-icons/ai";
 import LinesEllipsis from "react-lines-ellipsis";
-import { LikeButton } from "./LikeButton";
+import { LikeButton } from "./ui/LikeButton";
 import UserInfo from "./UserInfo";
-import { useNavigate, useParams } from "react-router-dom";
-import { UserContext } from "../App";
-import IconButton from "./IconButton";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import IconButton from "./ui/IconButton";
+import { UserContext } from "../Context/UserProvider";
+import { deletPost, editPost, likePost } from "../Services/api";
 
 export function Post(props) {
   const navigate = useNavigate();
@@ -25,83 +26,50 @@ export function Post(props) {
   function handleEdit() {
     setEdit(!edit);
   }
-
-  function handleEditText() {
-    fetch(`http://localhost:5000/api/posts/UpdatePost/${postId}`, {
-      method: "put",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ content: contentRef.current.value, id: post._id }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) alert(data.error);
-        else {
-          setPosts((prevPosts) =>
-            prevPosts.filter((prevPost) => prevPost._id !== post._id)
-          );
-        }
-      });
-
+  async function handleEditText() {
+    let response = await editPost(postId, contentRef.current.value);
+    if (response.error) alert();
+    else {
+      console.log(response.data, post, "test");
+      setPosts((prevPosts) =>
+        prevPosts.filter((prevPost) => {
+          if (prevPost._id === post._id) return response.data;
+          else return prevPost;
+        })
+      );
+    }
     setEdit(!edit);
   }
   function handleDelete() {
-    fetch(`http://localhost:5000/api/posts/DeletePost/${postId}`, {
-      method: "delete",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id: post._id }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          alert(data.error);
-        } else {
-          setPosts((prevPosts) =>
-            prevPosts.filter((prevPost) => prevPost._id !== post._id)
-          );
-        }
-      });
+    let response = deletPost(postId);
+    if (response.error) {
+      alert(response.error);
+    } else {
+      setPosts((prevPosts) =>
+        prevPosts.filter((prevPost) => prevPost._id !== post._id)
+      );
+    }
     setDeleteButton(!deleteButton);
     navigate("/");
   }
   async function handleLike() {
-    await fetch(`http://localhost:5000/api/posts/likePost/${postId}`, {
-      method: "put",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id: post._id }),
-    })
-      .then((res) => res.json())
-      .then(async (data) => {
-        if (data.error) alert(data.error);
-        else {
-          setPosts((prevPosts) => {
-            return prevPosts.map((prevPost) => {
-              if (prevPost._id === data.data._id) {
-                return data.data;
-              }
-              return prevPost;
-            });
-          });
-        }
+    let response =  await likePost(postId);
+    if (response.error) alert(response.error);
+    else {
+      setPosts((prevPosts) => {
+        return prevPosts.map((prevPost) => {
+          if (prevPost._id === response.data._id) {
+            return response.data;
+          }
+          return prevPost;
+        });
       });
+    }
   }
+
   return (
     <div className="  card  my-3 d-flex flex-row">
-      <>
-        <LikeButton
-          handleLike={handleLike}
-          Style={" "}
-          Count={post.likeCount}
-        />
-      </>
+      <LikeButton handleLike={handleLike} Count={post.likeCount} />
 
       <div className="   w-100">
         <div className=" card-header d-flex p-1 justify-content-between align-items-center">
@@ -148,14 +116,12 @@ export function Post(props) {
           )}
         </div>
         <div className="card-body pb-0">
-          <h3
+          <Link
             className="card-title  d-inline-block text-break"
-            onClick={() => {
-              navigate(`/post/view/${post._id}`);
-            }}
+            to={`/post/view/${post._id}`}
           >
             {post.title}
-          </h3>
+          </Link>
           {edit ? (
             <div>
               <textarea

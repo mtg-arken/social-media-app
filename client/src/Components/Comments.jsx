@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext, useState } from "react";
 import UserInfo from "./UserInfo";
 import {
   AiOutlineCloseCircle,
@@ -6,81 +6,61 @@ import {
   AiOutlineEdit,
 } from "react-icons/ai";
 
-import IconButton from "./IconButton";
-import { UserContext } from "../App";
+import IconButton from "./ui/IconButton";
 import { BsReply } from "react-icons/bs";
 import { useParams } from "react-router-dom";
+import { UserContext } from "../Context/UserProvider";
+import { createComment, editComment } from "../Services/api";
 
 function Comments(props) {
-  const contentRef = useRef();
-  const replyContentRef = useRef();
-
   const { postId } = useParams();
-
   const [edit, setEdit] = useState(false);
   const [reply, setReply] = useState(false);
-
   const { user } = useContext(UserContext);
-  const [deleteButton, setDeleteButton] = useState(false);
-  function handleReply() {
+  const [deleteButton] = useState(false);
+  const [content, setcontent] = useState();
+  const [replyContent, setReplyContent] = useState();
+  const [index, setindex] = useState(null);
+
+  function handleReply(i) {
+    setindex(i);
+
     setReply(!reply);
   }
-  function handleEdit() {
+  function handleEdit(i) {
+    setindex(i);
     setEdit(!edit);
+    setcontent(null)
   }
   function handleDelete() {
     console.log("delet");
   }
-  function handleEditComment(id) {
-    console.log(contentRef.current.value, id);
-    fetch(`http://localhost:5000/api/comments/UpdateComment/${id}`, {
-      method: "put",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ content: contentRef.current.value, id: id }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          alert(data.error);
+
+  async function handleEditComment(id) {
+    let response = await editComment(id,content)
+    if (response.error) {
+          alert(response.error);
         } else {
           props.setComments((prevComment) => {
             return prevComment.map((comment) => {
               if (comment._id === id) {
-                return data.data;
+                return response.data;
               }
               return comment;
             });
           });
         }
         setEdit(!edit);
-      });
   }
-  function handleReplyComment(id) {
-    fetch(`http://localhost:5000/api/comments/CreateComment/${postId}`, {
-      method: "post",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-
-      body: JSON.stringify({
-        content: replyContentRef.current.value,
-        parentId: id,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) alert(data.error);
-        else {
-          props.setPost([data.data]);
-        }
-        setReply(!reply);
-      });
+  async function handleReplyComment(id) {
+    let data = await createComment(postId, replyContent, id);
+    if (data.error) {
+      alert(data.error);
+    } else {
+      props.setPost([data.data]);
+    }
+    setReply(!reply);
   }
-  console.log(props.comments)
 
   return (
     <>
@@ -88,7 +68,7 @@ function Comments(props) {
         <h3> no comments yet</h3>
       ) : (
         props.comments.map((comment, i) => (
-          <div className="card mt-3 " key={i}>
+          <div className="card mt-3 " key={comment._id}>
             <div className=" card-header d-flex justify-content-between align-items-center">
               <UserInfo
                 username={comment.commenter.username}
@@ -98,11 +78,11 @@ function Comments(props) {
               />
               {(user._id === comment.commenter._id || user.isAdmin) && (
                 <div className="  ">
-                  <IconButton handleClick={handleReply}>
+                  <IconButton handleClick={() => handleReply(i)}>
                     <BsReply style={{ color: "blue" }} />
                   </IconButton>
-                  <IconButton handleClick={handleEdit}>
-                    {edit ? (
+                  <IconButton handleClick={() => handleEdit(i)}>
+                    {edit && props.comments.indexOf(comment) === index ? (
                       <AiOutlineCloseCircle style={{ color: "blue" }} />
                     ) : (
                       <AiOutlineEdit style={{ color: "blue" }} />
@@ -122,12 +102,13 @@ function Comments(props) {
               )}
             </div>
             <div className="card-body ">
-              {edit ? (
+              {edit && props.comments.indexOf(comment) === index ? (
                 <div>
                   <textarea
                     className="form-control "
-                    ref={contentRef}
                     defaultValue={comment.Content}
+                    value={content}
+                    onChange={(e) => setcontent(e.target.value)}
                     style={{ height: "100px" }}
                   />
                   <button
@@ -141,11 +122,12 @@ function Comments(props) {
               ) : (
                 <>
                   <div className="card-text  mb-3 ">{comment.Content}</div>
-                  {reply && (
+                  {reply && props.comments.indexOf(comment) === index && (
                     <div>
                       <textarea
-                        className="form-control "
-                        ref={replyContentRef}
+                        className="form-control"
+                        value={replyContent}
+                        onChange={(e) => setReplyContent(e.target.value)}
                         style={{ height: "100px" }}
                       />
                       <button
@@ -168,7 +150,7 @@ function Comments(props) {
                           edited={child.edited}
                         />{" "}
                         {(user._id === child.commenter._id || user.isAdmin) && (
-                          <div >
+                          <div>
                             <IconButton handleClick={handleEdit}>
                               {edit ? (
                                 <AiOutlineCloseCircle

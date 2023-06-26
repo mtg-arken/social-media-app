@@ -10,7 +10,9 @@ router.get("/GetPost/:PostID",PostControllers.GetPost)
 router.put("/UpdatePost/:PostId",VerifyAuth ,PostControllers.UpdatePost)
 router.delete("/DeletePost/:PostID",VerifyAuth ,PostControllers.DeletePost)
 router.put("/likePost/:PostID",VerifyAuth ,PostControllers.LikePost)
-router.get("/GetUsersLikedPost/:userID",PostControllers.GetUsersLikedPost)
+router.get("/GetUserPosts/:userID",PostControllers.GetUserPosts)
+router.get("/GetUserLikedPosts/:userID",PostControllers.GetUserLikedPosts)
+
 router.get("/GetTopPosts",PostControllers.GetTopPosts)
 
 

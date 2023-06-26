@@ -200,15 +200,32 @@ const LikePost = async (req, res) => {
   }
 };
 
-const GetUsersLikedPost = async (req, res) => {
+const GetUserPosts = async (req, res) => {
   try {
     const userID = req.params.userID;
 
     TestValidIP(userID);
-    const likes = await PostLike.find({ user: userID })
-      .populate({ path: "post", populate: { path: "Owner" } })
-      .lean();
-    return res.status(200).json({ data: likes });
+    const posts = await Post.find({ Owner: userID }).populate(
+      "Owner",
+      "-password"
+    );
+    return res.status(200).json({ data: posts });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+const GetUserLikedPosts = async (req, res) => {
+  try {
+    const userID = req.params.userID;
+
+    TestValidIP(userID);
+    const posts = await PostLike.find({ Owner: userID }).populate({
+      path: "post",
+      populate: { path: "Owner", select: "-password" },
+    });
+
+
+    return res.status(200).json({ data: posts});
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -255,7 +272,8 @@ module.exports = {
   UpdatePost,
   DeletePost,
   LikePost,
-  GetUsersLikedPost,
+  GetUserPosts,
   GetPost,
   GetTopPosts,
+  GetUserLikedPosts,
 };

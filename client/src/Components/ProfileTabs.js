@@ -1,19 +1,32 @@
-import React from "react";
-import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
-
 function ProfileTabs(props) {
+  function handleClick(e) {
+    props.setTab(e.target.getAttribute("data-value"));
+  }
+
   return (
-    <Tabs
-      id="controlled-tab"
-      activeKey={props.tab}
-      onSelect={(k) => props.setTab(k)}
-      className="mb-3"
-    >
-      <Tab eventKey="Posts" title="Posts" />
-      <Tab eventKey="Liked" title="Liked" />
-      <Tab eventKey="Comments" title="Comments" />
-    </Tabs>
+    <ul className="nav nav-tabs">
+      <li
+        className={`nav-link ${props.tab === "Posts" ? "active" : ""}`}
+        data-value="Posts"
+        onClick={handleClick}
+      >
+        posts
+      </li>
+      <li
+        className={`nav-link ${props.tab === "Liked" ? "active" : ""}`}
+        data-value="Liked"
+        onClick={handleClick}
+      >
+        liktes
+      </li>
+      <li
+        className={`nav-link ${props.tab === "Comments" ? "active" : ""}`}
+        data-value="Comments"
+        onClick={handleClick}
+      >
+        comments
+      </li>
+    </ul>
   );
 }
 

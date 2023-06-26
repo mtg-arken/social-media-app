@@ -66,7 +66,6 @@ const GetPostComments = async (req, res) => {
         },
       })
       .lean();
-    console.log(comments);
 
     return res.status(200).json({ data: comments });
   } catch (error) {
@@ -97,7 +96,6 @@ const UpdateComment = async (req, res) => {
       .populate({ path: "commenter", select: "-password" })
       .populate({ path: "children", populate: { path: "children" } })
       .lean();
-    console.log(comment);
 
     return res.status(200).json({ data: comment });
   } catch (error) {

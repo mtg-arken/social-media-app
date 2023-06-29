@@ -9,18 +9,20 @@ const Register = async (req, res) => {
     if (!(UserName && Email && Password)) {
       throw new Error("All inputs required");
     }
+   
+
     const ExistedUser = await User.findOne({
       $or: [{ username: UserName }, { email: Email }],
     });
     if (ExistedUser) {
       throw new Error("username and email should be unique");
     }
-
     const user = await User.create({
       username: UserName,
       email: Email,
       password: Password,
     });
+    console.log(UserName, Email, Password)
 
     return res.json(user);
   } catch (err) {

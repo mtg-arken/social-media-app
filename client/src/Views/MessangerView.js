@@ -9,8 +9,8 @@ import { UserContext } from "../Context/UserProvider";
 import io from "socket.io-client";
 
 export default function MessangerView(params) {
-  const [socket, setSocket] = useState();
-  const [conversationId, setConversationId] = useState();
+  const [socket, setSocket] = useState(null);
+  const [conversationId, setConversationId] = useState(null);
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
 

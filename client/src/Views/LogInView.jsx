@@ -53,7 +53,7 @@ export default function LogInView(params) {
           />
           <label>Password</label>
         </div>
-        <button type="submit" className="btn btn-primary">
+        <button type="submit" className="btn btn-outline-primary">
           Submit
         </button>
       </form>

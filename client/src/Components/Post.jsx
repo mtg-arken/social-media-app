@@ -53,7 +53,7 @@ export function Post(props) {
     navigate("/");
   }
   async function handleLike() {
-    let response =  await likePost(postId);
+    let response = await likePost(postId);
     if (response.error) alert(response.error);
     else {
       setPosts((prevPosts) => {

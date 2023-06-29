@@ -11,13 +11,18 @@ function SortBy(props) {
     setSearchParams(searchParams);
   };
   return (
-    <div className="d-flex align-items-center " >
-      <label className="  d-block! w-75 m-0  p-0  ">Sort by :</label>
-      <select className="form-select " value={props.sort} onChange={(e) => handleSort(e)}>
+    <div className="d-flex align-items-center ">
+      <label className="d-sm-inline-block w-75 m-0 p-0  d-none" style={{ whiteSpace: "nowrap" }}>Sort by:</label>
+      <select
+        className="form-select "
+        value={props.sort}
+        onChange={(e) => handleSort(e)}
+        style={{ minWidth: '125px' }}
+        >
         {Sorts.map((elem, i) => {
           return (
-            <option value={elem} key={i}>
-              {elem}
+            <option value={elem} key={i}  >
+                {elem}              
             </option>
           );
         })}

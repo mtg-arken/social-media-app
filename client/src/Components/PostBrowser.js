@@ -23,19 +23,16 @@ export default function PostBrowser() {
   }, [searchParams, sort, setPosts]);
 
   return (
-    <div className="d-flex flex-column">
+    <div className="d-flex flex-column ">
       <div className=" card mb-3 d-flex  flex-row justify-content-between p-2">
         <button
           type="button"
-          className="btn btn-secondary "
+          className="btn btn-outline-primary"
           onClick={() => navigate("/posts/create")}
         >
           + New Post
         </button>
-
-        <div className=" d-flex  align-items-center w-25 justify-content-center">
-          <SortBy sort={sort} setSort={setSort} />
-        </div>
+        <SortBy sort={sort} setSort={setSort} />
       </div>
       {loading ? <Loader /> : <PostCard posts={posts} setPosts={setPosts} />}
     </div>

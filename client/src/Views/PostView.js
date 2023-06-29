@@ -11,9 +11,10 @@ import { GetPost, GetPostComments } from "../Services/api";
 function PostView() {
   const [post, setPost] = useState([{}]);
   const [loading, setLoading] = useState(true);
-  const [comments, setComments] = useState();
+  const [comments, setComments] = useState(null);
 
   const { postId } = useParams();
+
   useEffect(() => {
     const fetchPost = async () => {
       let response = await GetPost(postId);
@@ -48,7 +49,7 @@ function PostView() {
             <Loader />
           ) : (
             <div>
-              <PostCard posts={post} setPosts={setPost} />
+              <PostCard post={post} setPost={setPost} />
               <AddComments setPost={setPost} />
               <Comments
                 comments={comments}

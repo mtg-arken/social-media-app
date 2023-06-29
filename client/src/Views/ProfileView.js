@@ -14,7 +14,7 @@ import {
   GetUserPosts,
 } from "../Services/api";
 
-export default function ProfileView(params) {
+export default function ProfileView() {
   const { userId } = useParams();
   const [tab, setTab] = useState("Posts");
   const [posts, setPosts] = useState([]);

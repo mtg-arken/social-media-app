@@ -157,6 +157,17 @@ export async function logout() {
       credentials: "include",
     })
 }
+export async function Register(data) {
+  let res = await fetch("http://localhost:5000/api/auth/Register", {
+    method: "POST", // *GET, POST, PUT, DELETE, etc.
+    credentials: "include", // include, *same-origin, omit
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  return  res.json();
+}
 
 
 

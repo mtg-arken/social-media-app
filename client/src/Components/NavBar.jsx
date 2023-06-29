@@ -52,20 +52,22 @@ function NavBar(props) {
                   type="search"
                   placeholder="Search"
                   className="form-control w-auto"
+                  required
                 />
               </>
             ) : (
-              <>
+              <div className=" d-flex align-items-center justify-content-between w-50">
                 <Link to="/">
                   <AiFillHighlight style={{ fontSize: "30px" }} />{" "}
                 </Link>
                 <button
-                  style={{ borderRadius: "50%", marginLeft: "100px" }}
+                className="  "
+                  style={{ borderRadius: "50%"}}
                   onClick={handleSearchIcon}
                 >
                   <AiOutlineSearch />
                 </button>
-              </>
+              </div>
             )}
 
             <div className=" d-flex  justify-content-between align-items-center">
@@ -117,6 +119,7 @@ function NavBar(props) {
           type="search"
           placeholder="Search"
           className={`form-control mb-4  ${searchIcon ? "" : "d-none"} `}
+          required
         />
       )}
       {props.children}

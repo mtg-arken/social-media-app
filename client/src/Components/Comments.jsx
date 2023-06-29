@@ -18,8 +18,8 @@ function Comments(props) {
   const [reply, setReply] = useState(false);
   const { user } = useContext(UserContext);
   const [deleteButton] = useState(false);
-  const [content, setcontent] = useState();
-  const [replyContent, setReplyContent] = useState();
+  const [content, setcontent] = useState(null);
+  const [replyContent, setReplyContent] = useState(null);
   const [index, setindex] = useState(null);
 
   function handleReply(i) {

@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   AiOutlineCloseCircle,
   AiOutlineComment,
@@ -8,10 +8,10 @@ import {
 import LinesEllipsis from "react-lines-ellipsis";
 import { LikeButton } from "./ui/LikeButton";
 import UserInfo from "./UserInfo";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import IconButton from "./ui/IconButton";
 import { UserContext } from "../Context/UserProvider";
-import { deletPost, editPost, likePost } from "../Services/api";
+import { deletePost, editPost, likePost } from "../Services/api";
 
 export function Post(props) {
   const navigate = useNavigate();
@@ -20,40 +20,40 @@ export function Post(props) {
   const { post, setPosts } = props;
   const { user } = useContext(UserContext);
 
+  
   const contentRef = useRef();
-  let { postId } = useParams();
-
   function handleEdit() {
     setEdit(!edit);
   }
   async function handleEditText() {
-    let response = await editPost(postId, contentRef.current.value);
-    if (response.error) alert();
+    let response = await editPost(post._id, contentRef.current.value);
+    if (response.error) alert(response.error);
     else {
-      console.log(response.data, post, "test");
       setPosts((prevPosts) =>
         prevPosts.filter((prevPost) => {
           if (prevPost._id === post._id) return response.data;
           else return prevPost;
         })
       );
+      props.setModifying(true)
     }
     setEdit(!edit);
   }
+
   function handleDelete() {
-    let response = deletPost(postId);
+    let response = deletePost(post._id);
     if (response.error) {
       alert(response.error);
     } else {
       setPosts((prevPosts) =>
         prevPosts.filter((prevPost) => prevPost._id !== post._id)
       );
+      props.setModifying(true)
     }
     setDeleteButton(!deleteButton);
-    navigate("/");
   }
   async function handleLike() {
-    let response = await likePost(postId);
+    let response = await likePost(post._id);
     if (response.error) alert(response.error);
     else {
       setPosts((prevPosts) => {
@@ -64,34 +64,30 @@ export function Post(props) {
           return prevPost;
         });
       });
+      props.setModifying(true)
     }
   }
 
   return (
     <div className="  card  my-3 d-flex flex-row">
-      <LikeButton handleLike={handleLike} Count={post.likeCount} />
-
+      <LikeButton
+        handleLike={handleLike}
+        Count={post.likeCount}
+        Style={
+          "btn d-flex  flex-column justify-content-center align-items-center bg-light "
+        }
+      />
       <div className="   w-100">
-        <div className=" card-header d-flex p-1 justify-content-between align-items-center">
-          {props.top ? (
-            <UserInfo
-              username={post.Owner.username}
-              image={post.Owner.image}
-              createdAt={post.createdAt}
-              top={true}
-              id={post.Owner._id}
-            />
-          ) : (
-            <UserInfo
-              username={post.Owner.username}
-              image={post.Owner.image}
-              createdAt={post.createdAt}
-              edited={post.edited}
-              id={post.Owner._id}
-            />
-          )}
-          {(user._id === post.Owner._id || user.isAdmin) && (
-            <div className=" d-flex p-1 justify-content-between align-items-center">
+        <div className=" card-header d-flex p-1 justify-content-between align-items-center  ">
+          <UserInfo
+            username={post.Owner?.username}
+            image={post.Owner.image}
+            createdAt={post.createdAt}
+            top={true}
+            id={post.Owner._id}
+          />
+          {(user?._id === post.Owner?._id && !props.top) && (
+            <div className="d-flex p-1 justify-content-between align-items-center ">
               <IconButton handleClick={handleEdit}>
                 {edit ? (
                   <AiOutlineCloseCircle style={{ color: "blue" }} />
@@ -100,7 +96,7 @@ export function Post(props) {
                 )}
               </IconButton>
               {deleteButton ? (
-                <IconButton handleClick={setDeleteButton(!deleteButton)}>
+                <IconButton handleClick={() => setDeleteButton(!deleteButton)}>
                   <AiOutlineCloseCircle
                     style={{ color: "red", marginInline: "10px" }}
                   />
@@ -152,10 +148,14 @@ export function Post(props) {
           )}
 
           {!props.top && (
-            <div className=" d-flex mt-2 ">
-              <AiOutlineComment size={20} />
+            <Link
+            className="d-flex mt-2 "
+            to={`/post/view/${post._id}`}
+          >
+            <AiOutlineComment size={20} />
               <p className=" px-1">{post.commentsCount}</p>
-            </div>
+          </Link>
+            
           )}
         </div>
       </div>

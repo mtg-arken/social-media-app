@@ -10,9 +10,10 @@ function SortBy(props) {
     searchParams.set("sortBy", e.target.value);
     setSearchParams(searchParams);
   };
+  
   return (
     <div className="d-flex align-items-center ">
-      <label className="d-sm-inline-block w-75 m-0 p-0  d-none" style={{ whiteSpace: "nowrap" }}>Sort by:</label>
+      <label className="d-sm-inline-block w-75 m-0 px-1  d-none" style={{ whiteSpace: "nowrap" }}>Sort by : </label>
       <select
         className="form-select "
         value={props.sort}

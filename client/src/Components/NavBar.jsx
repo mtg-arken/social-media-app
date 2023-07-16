@@ -76,7 +76,7 @@ function NavBar(props) {
               </Link>
               {Object.keys(user).length !== 0 ? (
                 <>
-                  <Link to="/Messanger">
+                  <Link to="/Messenger">
                     <BsFillChatDotsFill style={{ fontSize: "20px" }} />
                   </Link>
                   <Link to={`/profile/${user._id}`} className=" py-1 px-2">
@@ -93,7 +93,7 @@ function NavBar(props) {
 
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-primary"
                     onClick={handleLogOut}
                   >
                     Logout

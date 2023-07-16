@@ -44,6 +44,7 @@ const GetPosts = async (req, res) => {
         break;
     }
 
+
     return res.status(200).json({ data: posts });
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -98,7 +99,7 @@ const UpdatePost = async (req, res) => {
     }
 
     if (post.Owner._id.toString() != userId.id) {
-      throw new Error("you dont have tha authority to update this post");
+      throw new Error("you don't have tha authority to update this post");
     }
     if (cooldownPost.has(userId.id)) {
       throw new Error("your doing too much requests , wait 1 min");
@@ -140,12 +141,15 @@ const DeletePost = async (req, res) => {
     }
 
     if (post.Owner._id.toString() != userId.id) {
-      throw new Error("you dont have tha authority to update this post");
+      throw new Error("you don't have tha authority to update this post");
     }
 
     post.remove();
     if (post.commentsCount > 0) {
       await Comment.deleteMany({ post: postID });
+    }
+    if(post.likeCount>0){
+      await PostLike.deleteMany({ post: postID });
     }
 
     return res.status(200).json({ data: post });
@@ -156,7 +160,6 @@ const DeletePost = async (req, res) => {
 const LikePost = async (req, res) => {
   try {
     const { id } = req.body;
-
     let postID = req.params.PostID;
     const userId = jwt.decode(req.cookies.RefreshToken);
     if (postID === "undefined") postID = id;
@@ -199,7 +202,6 @@ const LikePost = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
-
 const GetUserPosts = async (req, res) => {
   try {
     const userID = req.params.userID;
@@ -224,8 +226,7 @@ const GetUserLikedPosts = async (req, res) => {
       populate: { path: "Owner", select: "-password" },
     });
 
-
-    return res.status(200).json({ data: posts});
+    return res.status(200).json({ data: posts });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -240,13 +241,11 @@ const GetPost = async (req, res) => {
     const post = await Post.findById(PostID)
       .populate("Owner", "-password")
       .lean();
-
     return res.status(200).json({ data: post });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
 };
-
 const GetTopPosts = async (req, res) => {
   try {
     let posts = await Post.find()

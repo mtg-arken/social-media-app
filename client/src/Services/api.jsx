@@ -47,7 +47,7 @@ export async function editPost(postId, content) {
   );
   return await res.json();
 }
-export async function deletPost(postId) {
+export async function deletePost(postId) {
   let res = await fetch(
     `http://localhost:5000/api/posts/DeletePost/${postId}`,
     {
@@ -118,7 +118,7 @@ export async function login(Email, Password) {
 }
 export async function GetPost(postId) {
   let res = await fetch(`http://localhost:5000/api/posts/GetPost/${postId}`);
-  return await res.json();
+  return  res.json();
 }
 export async function GetPostComments(postId) {
   let res = await fetch(
@@ -136,6 +136,7 @@ export async function GetUserLikedPosts(userId) {
   let res = await fetch(
     `http://localhost:5000/api/posts/GetUserLikedPosts/${userId}`
   );
+  
   return await res.json();
 }
 export async function GetUserComments(userId) {

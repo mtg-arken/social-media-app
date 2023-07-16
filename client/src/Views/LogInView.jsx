@@ -57,7 +57,6 @@ export default function LogInView(params) {
           Submit
         </button>
       </form>
-
       <p className=" mt-5">
         Copyright © 2022 <Link to="/">pinkit</Link>
       </p>

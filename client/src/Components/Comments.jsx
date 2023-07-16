@@ -33,7 +33,6 @@ function Comments(props) {
     setcontent(null)
   }
   function handleDelete() {
-    console.log("delet");
   }
 
   async function handleEditComment(id) {

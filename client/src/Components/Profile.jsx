@@ -11,6 +11,7 @@ function Profile() {
   const postSCount = useRef(0);
   const likeCount = useRef(0);
   const navigate = useNavigate();
+
   useEffect(() => {
     const fetchUser = async () => {
       const response = await getProfile(userId);
@@ -24,8 +25,27 @@ function Profile() {
     };
     fetchUser();
   }, [userId]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const imageStyle = {
+        clipPath: "circle(40%)",
+        width: window.innerWidth >= 992 ? "120px" : "60px",
+        height: window.innerWidth >= 992 ? "120px" : "60px",
+      };
+      setImageStyle(imageStyle);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup the event listener
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   function handleMessage() {
-    navigate("/Messanger", {
+    navigate("/Messenger", {
       state: {
         name: ProfileUser.username,
         image: ProfileUser.image,
@@ -34,29 +54,43 @@ function Profile() {
     });
   }
 
+  const Counts = (
+    <div className="d-flex mt-2">
+      <p>Likes: {likeCount.current ? likeCount.current : 0}</p>
+      <p className="ml-3">
+        Posts: {postSCount.current ? postSCount.current : 0}
+      </p>
+    </div>
+  );
+
+  const [imageStyle, setImageStyle] = useState({
+    clipPath: "circle(40%)",
+    width: window.innerWidth >= 992 ? "120px" : "60px",
+    height: window.innerWidth >= 992 ? "120px" : "60px",
+  });
+
   return (
-    <div className="card d-flex flex-column justify-content-evenly align-items-center">
-      <img
-        src={ProfileUser.image}
-        alt="Logo"
-        style={{ clipPath: "circle(40%) ", width: "120px", height: "120px" }}
-      />
-      <h3>{ProfileUser.username}</h3>
-      <h6>bio :{ProfileUser.bio ? ProfileUser.bio : " no bio yet"}</h6>
-      {user._id == userId ? (
-        <Link to=""> edit profile</Link>
+    <div className="card d-flex flex-lg-column justify-content-evenly align-items-center">
+      <div className=" container " >
+        <div className="d-flex justify-content-lg-center justify-content-between  align-items-center ">
+          <div className="d-flex flex-lg-column align-items-center">
+            <img src={ProfileUser.image} alt="Logo" style={imageStyle} />
+            <h3>{ProfileUser.username}</h3>
+          </div>
+          <div className="d-lg-none">{Counts}</div>
+        </div>
+      </div>
+
+      <hr className="w-75 d-lg-none" />
+      <h6>Bio: {ProfileUser.bio ? ProfileUser.bio : "No bio yet"}</h6>
+      {user._id === userId ? (
+        <Link to="">Edit profile</Link>
       ) : (
-        <button className="btn btn-outline-primary " onClick={handleMessage}>
-          message{" "}
+        <button className="btn btn-outline-primary my-lg-0 my-2" onClick={handleMessage}>
+          Message
         </button>
       )}
-      <div className="d-flex mt-2 ">
-        <p> Likes : {likeCount.current ? likeCount.current : 0} </p>
-        <p className=" ml-3">
-          {" "}
-          posts : {postSCount.current ? postSCount.current : 0}{" "}
-        </p>
-      </div>
+      <div className="d-none d-lg-block">{Counts}</div>
     </div>
   );
 }
